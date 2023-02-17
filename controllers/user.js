@@ -1,4 +1,4 @@
-const crypto = require('crypto')
+const jwt = require("jsonwebtoken")
 const User = require('../models/user');
 const EmailVerificationToken = require("../models/emailVerificationToken");
 const { isValidObjectId } = require('mongoose');
@@ -175,7 +175,7 @@ exports.sendResetPasswordTokenStatus = (req, res) => {
 exports.resetPassword = async (req, res) => {
     const { newPassword, userId } = req.body;
 
-    const user = await User.findById( userId )
+    const user = await User.findById(userId)
     const matched = await user.comparePassword(newPassword)
     if (matched) return sendError(res, 'The new password must be different from the old one!');
     user.password = newPassword
@@ -194,7 +194,23 @@ exports.resetPassword = async (req, res) => {
         <p>Now you can use new passsword. </p> 
 `
     })
-    res.json({message: 'Password reset successfuly, now you can use  your new password'})
+    res.json({ message: 'Password reset successfuly, now you can use  your new password' })
 }
 
 
+//Sign  in
+
+exports.signIn = async (req, res) => {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email })
+    if (!user) return sendError(res, "Email/Password mismatch")
+
+    const matched = await user.comparePassword(password)
+    if (!matched) return sendError(res, "Email/Password is mismatch!")
+
+    const { _id, name } = user;
+
+    const jwtToken = jwt.sign({ userId: _id }, process.env.JWT_SECRET )
+    res.json({ user: { id: _id, name, email, token: jwtToken } })
+}
