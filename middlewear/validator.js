@@ -20,6 +20,14 @@ exports.signInValidator = [
     check("password").trim().not().isEmpty().withMessage("Password is missing")
 ]
 
+//validating for actor and importing inside routes/actor.js as middlewear
+exports.actorInfoValidator = [
+    check('name').trim().not().isEmpty().withMessage('Actor name is missing!'),
+    check('about').trim().not().isEmpty().withMessage('About is a required filed!'),
+    check('gender').trim().not().isEmpty().withMessage('Gender is a required field!'),
+]
+
+
 
 exports.validate = (req, res, next) => {
     const error = validationResult(req).array()
